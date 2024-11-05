@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "584517337591",
+    "firebase_url": "https://smarthome-7c0b9-default-rtdb.firebaseio.com",
+    "project_id": "smarthome-7c0b9",
+    "storage_bucket": "smarthome-7c0b9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584517337591:android:2333c17e20e53cee09eef2",
+        "android_client_info": {
+          "package_name": "com.example.storage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBKGltivfoJeFS_oidWq81AY-uOnukF2Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
