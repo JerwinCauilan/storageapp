@@ -24,6 +24,7 @@ Ensure your project is configured correctly:
 You can either run the app on an Android Emulator or a Physical Device. Below are instructions for both options:
 
 Option 1: Set Up an Android Emulator
+
 If you don't have an Android device, you can use the Android Emulator to run the app. Here's how to set it up:
 1. Open AVD Manager in Android Studio:
 * In Android Studio, go to Tools > AVD Manager (Android Virtual Device Manager).
@@ -40,11 +41,12 @@ If you don't have an Android device, you can use the Android Emulator to run the
 * With the emulator running, return to Android Studio and click the Run button
 
 Option 2: Run on a Physical Device
+
 If you prefer to use your physical Android device for testing, follow these steps:
 1. Enable Developer Options on Your Device:
 * Open the Settings app on your Android device.
 * Scroll down and tap About phone.
-* Tap Build number to enable Developer options.
+* Tap the Build number to enable Developer options.
 2. Enable USB Debugging:
 * Go back to Settings and tap Developer options.
 * Enable USB debugging by toggling the switch.
