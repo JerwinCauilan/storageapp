@@ -22,6 +22,7 @@ Ensure your project is configured correctly:
 * Gradle Sync: Android Studio will prompt you to sync the project with Gradle once the project is open. Click Sync Now to resolve any dependencies.
 5. Set Up an Emulator or Use a Physical Device
 You can either run the app on an Android Emulator or a Physical Device. Below are instructions for both options:
+
 Option 1: Set Up an Android Emulator
 If you don't have an Android device, you can use the Android Emulator to run the app. Here's how to set it up:
 1. Open AVD Manager in Android Studio:
