@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="30dp"
+        android:layout_gravity="center"
+        android:text="Add Product"
+        android:fontFamily="@font/open_sans_semibold"
+        android:textColor="@color/black"
+        android:textSize="20sp"/>
+
+    <Spinner
+        android:id="@+id/spinnerProduct"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:textSize="16sp"
+        android:paddingHorizontal="5dp"
+        android:background="@drawable/input_field"
+        android:fontFamily="@font/roboto"
+        android:layout_marginBottom="12dp" />
+
+    <EditText
+        android:id="@+id/quantityET"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/roboto"
+        android:background="@drawable/input_field"
+        android:paddingHorizontal="10dp"
+        android:inputType="number"
+        android:hint="Quantity"
+        android:textColorHint="@color/gray_500"
+        android:layout_marginBottom="12dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginVertical="10dp"
+        android:gravity="end">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnCancel"
+            android:layout_width="92dp"
+            android:layout_height="36dp"
+            android:background="@drawable/btn_primary"
+            android:backgroundTint="@color/red"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="Cancel"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnSubmit"
+            android:layout_width="92dp"
+            android:layout_height="36dp"
+            android:background="@drawable/btn_primary"
+            android:backgroundTint="@color/green"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="Submit"
+            android:textAllCaps="false"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+</LinearLayout>

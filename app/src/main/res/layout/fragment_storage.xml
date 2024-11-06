@@ -6,12 +6,53 @@
     android:background="@color/white"
     tools:context=".screen.StorageFragment">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="@color/black"
-        android:textSize="62sp"
-        android:text="STORAGE"
-        android:gravity="center"/>
+        android:orientation="vertical">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_gravity="center"
+            android:text="Storage"
+            android:fontFamily="@font/open_sans_bold"
+            android:textColor="@color/black"
+            android:textSize="20sp"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnAdd"
+            android:layout_width="92dp"
+            android:layout_height="36dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/btn_primary"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="Add"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp">
+
+            <HorizontalScrollView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TableLayout
+                    android:id="@+id/tableLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:stretchColumns="*"
+                    android:layout_marginBottom="100dp"/>
+
+            </HorizontalScrollView>
+
+        </ScrollView>
+    </LinearLayout>
 </FrameLayout>

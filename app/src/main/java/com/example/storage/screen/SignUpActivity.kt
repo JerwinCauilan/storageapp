@@ -70,12 +70,12 @@ class SignUpActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     val uid = user?.uid
-                    val timestamp = Timestamp.now()
+                    val timestamp = System.currentTimeMillis()
 
                     val data = hashMapOf(
                         "name" to name,
                         "email" to email,
-                        "createdAt" to timestamp,
+                        "timestamp" to timestamp,
                     )
                     if (uid != null) {
                         db.collection("users").document(uid).set(data)
