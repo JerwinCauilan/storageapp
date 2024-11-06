@@ -134,11 +134,11 @@ class StorageFragment : Fragment() {
             }
     }
 
-    private fun addRowToTable(purchaseDate: String, product: String, quantity: String, expiryDate: String) {
+    private fun addRowToTable(id: String, purchaseDate: String, product: String, quantity: String, expiryDate: String) {
         val tableRow = TableRow(requireContext())
         val rowData = listOf(purchaseDate, product, quantity, expiryDate)
 
-        tableRow.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.gray_100))
+        tableRow.background = ContextCompat.getDrawable(requireContext(), R.drawable.row_border)
         rowData.forEachIndexed { index, cellData ->
             val cell = TextView(requireContext())
             cell.layoutParams = TableRow.LayoutParams(
@@ -158,12 +158,47 @@ class StorageFragment : Fragment() {
             tableRow.addView(cell)
         }
 
+        val delete = TextView(requireContext()).apply {
+            text = "Delete"
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
+            textSize = 14f
+            setPadding(32, 16, 32, 16)
+            typeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_bold)
+            setOnClickListener { handleDelete(id) }
+        }
+        tableRow.addView(delete)
+
         binding.tableLayout.addView(tableRow)
+    }
+
+    private fun handleDelete(id: String) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_confirm_delete, null)
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<Button>(R.id.btnYes).setOnClickListener {
+            db.collection("storage").document(id)
+                .delete()
+                .addOnSuccessListener {
+                    Toast.makeText(requireContext(), "Product deleted successfully!", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Unexpected error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun addHeaderRow() {
         val headerRow = TableRow(requireContext())
-        val headers = listOf("Purchase Date", "Product", "Quantity", "Expiry Date")
+        val headers = listOf("Purchase Date", "Product", "Quantity", "Expiry Date", "Action")
 
         headers.forEach { header ->
             val headerCell = TextView(requireContext())
@@ -204,12 +239,13 @@ class StorageFragment : Fragment() {
 
     private fun displayData(documents: QuerySnapshot) {
         for (document in documents) {
+            val id = document.id
             val purchaseDate = document.getString("purchaseDate") ?: ""
             val product = document.getString("product") ?: ""
             val quantity = document.getString("quantity") ?: ""
             val expiryDate = document.getString("expiryDate") ?: ""
 
-            addRowToTable(purchaseDate, product, quantity, expiryDate)
+            addRowToTable(id, purchaseDate, product, quantity, expiryDate)
         }
     }
 
