@@ -3,15 +3,158 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white"
     tools:context=".screen.HomeFragment">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="@color/black"
-        android:textSize="62sp"
-        android:text="HOME"
-        android:gravity="center"/>
+        android:orientation="vertical">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            app:cardBackgroundColor="@color/primary_500"
+            app:cardCornerRadius="0dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Home"
+                android:fontFamily="@font/open_sans_bold"
+                android:textColor="@color/white"
+                android:textSize="20sp"/>
+        </androidx.cardview.widget.CardView>
+
+
+        <com.github.anastr.speedviewlib.TubeSpeedometer
+            android:id="@+id/gauge"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="50dp"
+            app:sv_unit="°C"
+            app:sv_speedTextPosition="CENTER"
+            app:sv_maxSpeed="10"
+            app:sv_speedTextColor="@color/black"
+            app:sv_speedometerBackColor="@color/gray_300"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="70dp"
+            android:gravity="center"
+            android:layout_marginHorizontal="30dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnOne"
+                android:layout_width="92dp"
+                android:layout_height="36dp"
+                android:background="@drawable/btn_primary"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="Level 1"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="match_parent" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTwo"
+                android:layout_width="92dp"
+                android:layout_height="36dp"
+                android:background="@drawable/btn_primary"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="Level 2"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="match_parent"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnThree"
+                android:layout_width="92dp"
+                android:layout_height="36dp"
+                android:background="@drawable/btn_primary"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="Level 3"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="30dp"
+            android:gravity="center">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnFour"
+                android:layout_width="92dp"
+                android:layout_height="36dp"
+                android:background="@drawable/btn_primary"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="Level 4"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="match_parent" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnFive"
+                android:layout_width="92dp"
+                android:layout_height="36dp"
+                android:background="@drawable/btn_primary"
+                android:fontFamily="@font/open_sans_bold"
+                android:text="Level 5"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnDefrost"
+            android:layout_width="150dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="50dp"
+            android:layout_gravity="center"
+            android:background="@drawable/btn_primary"
+            android:backgroundTint="@color/frost"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="Defrost mode"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnPS"
+            android:layout_width="200dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="30dp"
+            android:layout_gravity="center"
+            android:background="@drawable/btn_primary"
+            android:backgroundTint="@color/yellow"
+            android:fontFamily="@font/open_sans_bold"
+            android:text="Power Saving mode"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+
 
 </FrameLayout>

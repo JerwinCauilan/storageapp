@@ -56,4 +56,5 @@ dependencies {
     implementation(libs.lottie)
     implementation(libs.circleimageview)
     implementation(libs.picasso)
+    implementation(libs.speedviewlib)
 }

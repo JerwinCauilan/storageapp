@@ -92,17 +92,24 @@ class StorageFragment : Fragment() {
         }
 
         dialogView.findViewById<Button>(R.id.btnSubmit).setOnClickListener {
-            val selected = productSpinner.selectedItem.toString()
-            val qty = qtyET.text.toString()
+            binding.progressbar.visibility = View.VISIBLE
+            val selected = productSpinner.selectedItem?.toString() ?: "Select a product"
+            val qty = qtyET.text?.toString() ?: ""
 
-            if (selected == "Select a product") {
+            if (selected == "Select a product" || selected.isEmpty()) {
                 Toast.makeText(requireContext(), "Please select a product", Toast.LENGTH_SHORT).show()
-            } else if (qty.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter a quantity", Toast.LENGTH_SHORT).show()
-            } else {
-                storeData(selected, qty)
-                dialog.dismiss()
+                binding.progressbar.visibility = View.GONE
+                return@setOnClickListener
             }
+
+            if (qty.isEmpty() || qty.toIntOrNull() == null) {
+                Toast.makeText(requireContext(), "Please enter a valid quantity", Toast.LENGTH_SHORT).show()
+                binding.progressbar.visibility = View.GONE
+                return@setOnClickListener
+            }
+
+            storeData(selected, qty)
+            dialog.dismiss()
         }
 
         dialog.show()
@@ -128,9 +135,12 @@ class StorageFragment : Fragment() {
             .add(data)
             .addOnSuccessListener {
                 Toast.makeText(requireContext(), "Product added successfully!", Toast.LENGTH_SHORT).show()
+                binding.progressbar.visibility = View.GONE
+                fetchData()
             }
             .addOnFailureListener { e ->
                 Toast.makeText(requireContext(), "Unexpected error: ${e.message}", Toast.LENGTH_SHORT).show()
+                binding.progressbar.visibility = View.GONE
             }
     }
 
@@ -154,7 +164,12 @@ class StorageFragment : Fragment() {
             cell.setPadding(32, 16, 32, 16)
             cell.textSize = 14f
             cell.typeface = ResourcesCompat.getFont(requireContext(), R.font.roboto)
-            cell.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+            if (isExpired(expiryDate)) {
+                cell.setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
+            } else {
+                cell.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+            }
+
             tableRow.addView(cell)
         }
 
@@ -171,6 +186,12 @@ class StorageFragment : Fragment() {
         binding.tableLayout.addView(tableRow)
     }
 
+    private fun isExpired(expiryDate: String): Boolean {
+        val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
+        val expiry = dateFormat.parse(expiryDate)
+        return expiry?.before(Date()) == true
+    }
+
     private fun handleDelete(id: String) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_confirm_delete, null)
         val dialog = AlertDialog.Builder(requireContext())
@@ -182,13 +203,16 @@ class StorageFragment : Fragment() {
         }
 
         dialogView.findViewById<Button>(R.id.btnYes).setOnClickListener {
+            binding.progressbar.visibility = View.VISIBLE
             db.collection("storage").document(id)
                 .delete()
                 .addOnSuccessListener {
                     Toast.makeText(requireContext(), "Product deleted successfully!", Toast.LENGTH_SHORT).show()
+                    binding.progressbar.visibility = View.GONE
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(requireContext(), "Unexpected error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    binding.progressbar.visibility = View.GONE
                 }
             dialog.dismiss()
         }
@@ -228,8 +252,9 @@ class StorageFragment : Fragment() {
                 }
 
                 if (snapshot != null && !snapshot.isEmpty) {
-                    binding.tableLayout.removeViews(1, binding.tableLayout.childCount - 1)
-
+                    if (binding.tableLayout.childCount > 1) {
+                        binding.tableLayout.removeViews(1, binding.tableLayout.childCount - 1)
+                    }
                     displayData(snapshot)
                 } else {
                     Log.d("StorageFragment", "Current data: null")

@@ -16,6 +16,7 @@ firebaseStorage = "21.0.1"
 firebaseFirestore = "25.1.1"
 firebaseAuth = "23.1.0"
 picasso = "2.8"
+speedviewlib = "1.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,7 @@ firebase-storage = { group = "com.google.firebase", name = "firebase-storage", v
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
+speedviewlib = { module = "com.github.anastr:speedviewlib", version.ref = "speedviewlib" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
