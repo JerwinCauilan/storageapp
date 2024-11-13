@@ -1,5 +1,14 @@
-# Storage Application
+# Storage app | Kotlin | Firebase
+- [Features](#features)
 - [Usage](#usage)
+
+## Features
+* Real-time product management: Add and delete products in the storage, with automatic expiry date tracking and notifications.
+* Real-time temperature monitoring: Track and monitor the storage temperature in real time to ensure product safety.
+* Manual device control: Take manual control over the device settings for specific configurations.
+* User profiles: Create and manage personalized user profiles.
+* Voice commands: Control the app using voice commands for hands-free interaction.
+* Bluetooth connectivity with hardware devices: Connect to and control the device via Bluetooth for seamless integration and management.
 
 ## Usage
 ### Getting Started with the Storage Application
@@ -19,7 +28,7 @@ Change the directory to the cloned project:
 4. Configure the Android App
 Ensure your project is configured correctly:
 * SDK Version: The app requires Android SDK version 30 or higher.
-* Gradle Sync: Android Studio will prompt you to sync the project with Gradle once the project is open. Click Sync Now to resolve any dependencies.
+* Gradle Sync: Once the project is open, Android Studio will prompt you to sync it with Gradle. Click Sync Now to resolve any dependencies.
 5. Set Up an Emulator or Use a Physical Device
 You can either run the app on an Android Emulator or a Physical Device. Below are instructions for both options:
 
