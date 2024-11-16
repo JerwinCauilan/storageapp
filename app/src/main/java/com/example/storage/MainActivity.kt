@@ -1,9 +1,6 @@
 package com.example.storage
 
 import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothSocket
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -21,9 +18,8 @@ import com.example.storage.screen.HomeFragment
 import com.example.storage.screen.LogoutFragment
 import com.example.storage.screen.ProfileFragment
 import com.example.storage.screen.StorageFragment
-import java.io.OutputStream
 import java.util.Locale
-import java.util.UUID
+
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var binding: ActivityMainBinding
@@ -34,15 +30,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private val REQUEST_NOTIFICATION_PERMISSION = 201
     private val REQUEST_BLUETOOTH_PERMISSIONS = 1
     private var isListening = false
-
-    private var bluetoothSocket: BluetoothSocket? = null
-    private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-    private var bluetoothDevice: BluetoothDevice? = null
-
-    companion object {
-        private const val ARDUINO_DEVICE_NAME = "HC-05"
-        private val ARDUINO_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,8 +49,14 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         checkNotificationPermissions()
         checkBluetoothPermissions()
 
-        binding.mic.setOnClickListener {
-            activateVoiceRecognition()
+        binding.mic.setOnClickListener { activateVoiceRecognition() }
+
+        if (BluetoothManager.isBluetoothSupported() && !BluetoothManager.isConnected()) {
+            if (BluetoothManager.connectToArduino(this)) {
+                Toast.makeText(this, "Connected to Arduino", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Failed to connect to Arduino", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -113,11 +106,13 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun checkBluetoothPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.BLUETOOTH_ADMIN), REQUEST_BLUETOOTH_PERMISSIONS)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ), REQUEST_BLUETOOTH_PERMISSIONS)
+            }
         }
     }
 
@@ -138,7 +133,9 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "Bluetooth permission denied!", Toast.LENGTH_SHORT).show()
                 } else {
-                    connectToArduino()
+                    if (BluetoothManager.isBluetoothSupported() && !BluetoothManager.isConnected()) {
+                        BluetoothManager.connectToArduino(this)
+                    }
                 }
             }
         }
@@ -245,72 +242,38 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         speak("Give it another try, please.")
     }
 
-
     private fun manageRecognitionResult(spokenText: String) {
         when {
             spokenText.contains("Set level one", ignoreCase = true) || spokenText.contains("Set level 1", ignoreCase = true) -> {
-                sendCommandToArduino("1")
+                BluetoothManager.sendCommand("1")
                 speak("Setting to level one")
             }
             spokenText.contains("Set level two", ignoreCase = true) || spokenText.contains("Set level 2", ignoreCase = true) -> {
-                sendCommandToArduino("2")
+                BluetoothManager.sendCommand("2")
                 speak("Setting to level two")
             }
             spokenText.contains("Set level three", ignoreCase = true) || spokenText.contains("Set level 3", ignoreCase = true) -> {
-                sendCommandToArduino("3")
+                BluetoothManager.sendCommand("3")
                 speak("Setting to level three")
             }
             spokenText.contains("Set level four", ignoreCase = true) || spokenText.contains("Set level 4", ignoreCase = true) -> {
-                sendCommandToArduino("4")
+                BluetoothManager.sendCommand("4")
                 speak("Setting to level four")
             }
             spokenText.contains("Set level five", ignoreCase = true) || spokenText.contains("Set level 5", ignoreCase = true) -> {
-                sendCommandToArduino("5")
+                BluetoothManager.sendCommand("5")
                 speak("Setting to level five")
             }
             spokenText.contains("Set saving mode", ignoreCase = true) -> {
-                sendCommandToArduino("3")
+                BluetoothManager.sendCommand("3")
                 speak("Setting to Saving Mode")
             }
             spokenText.contains("Set defrost mode", ignoreCase = true) -> {
-                sendCommandToArduino("AD")
+                BluetoothManager.sendCommand("AD")
                 speak("Setting to Defrost Mode")
             }
             else -> {
                 noMatchDetected()
-            }
-        }
-    }
-
-    private fun connectToArduino() {
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter() ?: run {
-            Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val device: BluetoothDevice? = bluetoothAdapter.bondedDevices.find { it.name == ARDUINO_DEVICE_NAME }
-        if (device != null) {
-            try {
-                bluetoothSocket = device.createRfcommSocketToServiceRecord(ARDUINO_UUID)
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                    bluetoothSocket?.connect()
-                    Toast.makeText(this, "Connected to Arduino", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Connection failed", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            Toast.makeText(this, "Arduino not paired", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun sendCommandToArduino(command: String) {
-        val outputStream: OutputStream? = bluetoothSocket?.outputStream
-        if (outputStream != null) {
-            try {
-                outputStream.write("$command\n".toByteArray())
-            } catch (e: Exception) {
-                Toast.makeText(this, "Failed to send command", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -323,7 +286,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         if (::speechRecognizer.isInitialized) {
             speechRecognizer.destroy()
         }
-        bluetoothSocket?.close()
+        BluetoothManager.closeConnection()
         super.onDestroy()
     }
 }
