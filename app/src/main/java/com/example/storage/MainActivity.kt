@@ -18,23 +18,27 @@ import com.example.storage.screen.HomeFragment
 import com.example.storage.screen.LogoutFragment
 import com.example.storage.screen.ProfileFragment
 import com.example.storage.screen.StorageFragment
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import java.util.Locale
 
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var db: DatabaseReference
     private lateinit var tts: TextToSpeech
     private lateinit var speechRecognizer: SpeechRecognizer
 
     private val REQUEST_RECORD_AUDIO_PERMISSION = 200
     private val REQUEST_NOTIFICATION_PERMISSION = 201
-    private val REQUEST_BLUETOOTH_PERMISSIONS = 1
     private var isListening = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        db = FirebaseDatabase.getInstance().reference
 
         NotificationService(this)
 
@@ -47,17 +51,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         checkAudioPermissions()
         checkNotificationPermissions()
-        checkBluetoothPermissions()
 
         binding.mic.setOnClickListener { activateVoiceRecognition() }
-
-        if (BluetoothManager.isBluetoothSupported() && !BluetoothManager.isConnected()) {
-            if (BluetoothManager.connectToArduino(this)) {
-                Toast.makeText(this, "Connected to Arduino", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Failed to connect to Arduino", Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 
     private fun navbar() {
@@ -105,17 +100,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
     }
 
-    private fun checkBluetoothPermissions() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.BLUETOOTH_SCAN
-                ), REQUEST_BLUETOOTH_PERMISSIONS)
-            }
-        }
-    }
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
@@ -127,15 +111,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             REQUEST_NOTIFICATION_PERMISSION -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "Notification permission denied!", Toast.LENGTH_SHORT).show()
-                }
-            }
-            REQUEST_BLUETOOTH_PERMISSIONS -> {
-                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "Bluetooth permission denied!", Toast.LENGTH_SHORT).show()
-                } else {
-                    if (BluetoothManager.isBluetoothSupported() && !BluetoothManager.isConnected()) {
-                        BluetoothManager.connectToArduino(this)
-                    }
                 }
             }
         }
@@ -245,36 +220,71 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun manageRecognitionResult(spokenText: String) {
         when {
             spokenText.contains("Set level one", ignoreCase = true) || spokenText.contains("Set level 1", ignoreCase = true) -> {
-                BluetoothManager.sendCommand("1")
-                speak("Setting to level one")
+                changeLevel("1")
             }
             spokenText.contains("Set level two", ignoreCase = true) || spokenText.contains("Set level 2", ignoreCase = true) -> {
-                BluetoothManager.sendCommand("2")
-                speak("Setting to level two")
+                changeLevel("2")
             }
             spokenText.contains("Set level three", ignoreCase = true) || spokenText.contains("Set level 3", ignoreCase = true) -> {
-                BluetoothManager.sendCommand("3")
-                speak("Setting to level three")
+                changeLevel("3")
             }
             spokenText.contains("Set level four", ignoreCase = true) || spokenText.contains("Set level 4", ignoreCase = true) -> {
-                BluetoothManager.sendCommand("4")
-                speak("Setting to level four")
+                changeLevel("4")
             }
             spokenText.contains("Set level five", ignoreCase = true) || spokenText.contains("Set level 5", ignoreCase = true) -> {
-                BluetoothManager.sendCommand("5")
-                speak("Setting to level five")
+                changeLevel("5")
             }
             spokenText.contains("Set saving mode", ignoreCase = true) -> {
-                BluetoothManager.sendCommand("3")
-                speak("Setting to Saving Mode")
+                changeSaving("3")
             }
             spokenText.contains("Set defrost mode", ignoreCase = true) -> {
-                BluetoothManager.sendCommand("AD")
-                speak("Setting to Defrost Mode")
+                changeDefrost("AD")
             }
             else -> {
                 noMatchDetected()
             }
+        }
+    }
+
+    private fun changeLevel(newLevel: String) {
+        val chillerRef = db.child("chiller/level")
+        chillerRef.setValue(newLevel).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                speak("Setting to level $newLevel.")
+            } else {
+                speak("Failed to set level $newLevel.")
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("db", "Failed to set level $newLevel.", exception)
+            speak("Failed to set level $newLevel.")
+        }
+    }
+
+    private fun changeSaving(newLevel: String) {
+        val chillerRef = db.child("chiller/level")
+        chillerRef.setValue(newLevel).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                speak("Setting to Saving Mode")
+            } else {
+                speak("Failed to set Saving Mode")
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("db", "Failed to set Saving Mode", exception)
+            speak("Failed to set Saving Mode")
+        }
+    }
+
+    private fun changeDefrost(newLevel: String) {
+        val chillerRef = db.child("chiller/level")
+        chillerRef.setValue(newLevel).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                speak("Setting to Defrost Mode")
+            } else {
+                speak("Failed to set Defrost Mode")
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("db", "Failed to set Defrost Mode", exception)
+            speak("Failed to set Defrost Mode")
         }
     }
 
@@ -286,7 +296,6 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         if (::speechRecognizer.isInitialized) {
             speechRecognizer.destroy()
         }
-        BluetoothManager.closeConnection()
         super.onDestroy()
     }
 }

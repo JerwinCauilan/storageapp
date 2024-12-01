@@ -28,19 +28,25 @@ class NotificationService(private val context: Context) {
                 "Product Expiry Notifications",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Notifications for expired products"
+                description = "Notifications for expired or soon to expire products"
             }
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
 
-    private fun sendNotification(product: String) {
+    private fun sendNotification(product: String, isExpiringTomorrow: Boolean) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val contentText = if (isExpiringTomorrow) {
+            "Your product $product is expiring tomorrow!"
+        } else {
+            "$product has expired!"
+        }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle("Product Expiry Alert")
-            .setContentText("$product has expired!")
+            .setContentText(contentText)
             .setSmallIcon(R.drawable.document)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
@@ -59,9 +65,15 @@ class NotificationService(private val context: Context) {
                     val product = document.getString("product") ?: ""
                     val expiryDate = document.getString("expiryDate") ?: ""
 
-                    if (isExpired(expiryDate) && !notifiedProducts.contains(product)) {
-                        sendNotification(product)
-                        notifiedProducts.add(product)
+                    when {
+                        isExpiringTomorrow(expiryDate) && !notifiedProducts.contains("$product-tomorrow") -> {
+                            sendNotification(product, isExpiringTomorrow = true)
+                            notifiedProducts.add("$product-tomorrow")
+                        }
+                        isExpired(expiryDate) && !notifiedProducts.contains(product) -> {
+                            sendNotification(product, isExpiringTomorrow = false)
+                            notifiedProducts.add(product)
+                        }
                     }
                 }
             }
@@ -74,5 +86,16 @@ class NotificationService(private val context: Context) {
         val currentDate = dateFormat.format(Date())
 
         return dateFormat.format(expiry) == currentDate
+    }
+
+    private fun isExpiringTomorrow(expiryDate: String): Boolean {
+        val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
+        val expiry = dateFormat.parse(expiryDate) ?: return false
+
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, 1)
+        val tomorrow = dateFormat.format(calendar.time)
+
+        return dateFormat.format(expiry) == tomorrow
     }
 }

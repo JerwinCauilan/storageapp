@@ -164,14 +164,30 @@ class StorageFragment : Fragment() {
             cell.setPadding(32, 16, 32, 16)
             cell.textSize = 14f
             cell.typeface = ResourcesCompat.getFont(requireContext(), R.font.roboto)
-            if (isExpired(expiryDate)) {
-                cell.setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
-            } else {
-                cell.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+            when {
+                isExpired(expiryDate) -> {
+                    cell.setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
+                }
+                isExpiringTomorrow(expiryDate) -> {
+                    cell.setTextColor(ContextCompat.getColor(requireContext(), R.color.yellow))
+                }
+                else -> {
+                    cell.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                }
             }
 
             tableRow.addView(cell)
         }
+
+        val edit = TextView(requireContext()).apply {
+            text = "Edit"
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_500))
+            textSize = 14f
+            setPadding(32, 16, 32, 16)
+            typeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_bold)
+            setOnClickListener { handleEdit(id, product, quantity, expiryDate) }
+        }
+        tableRow.addView(edit)
 
         val delete = TextView(requireContext()).apply {
             text = "Delete"
@@ -190,6 +206,17 @@ class StorageFragment : Fragment() {
         val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
         val expiry = dateFormat.parse(expiryDate)
         return expiry?.before(Date()) == true
+    }
+
+    private fun isExpiringTomorrow(expiryDate: String): Boolean {
+        val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
+        val expiry = dateFormat.parse(expiryDate)
+
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, 1)
+        val tomorrow = calendar.time
+
+        return expiry == tomorrow
     }
 
     private fun handleDelete(id: String) {
@@ -220,9 +247,104 @@ class StorageFragment : Fragment() {
         dialog.show()
     }
 
+    private fun handleEdit(id: String, oldProduct: String, oldQuantity: String, oldExpiryDate: String) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_item, null)
+        val productSpinner: Spinner = dialogView.findViewById(R.id.spinnerProduct)
+        val qtyET: EditText = dialogView.findViewById(R.id.quantityET)
+        val expiryDateET: EditText = dialogView.findViewById(R.id.expiryDateET)
+
+        val productList = listOf("Select a product", "Pork", "Chicken", "Root vegetable", "Beef", "Leafy green", "Bell peppers", "Cucumbers", "Zucchini")
+
+        val adapter = object : ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, productList) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent)
+                val textView = view as TextView
+                textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                return view
+            }
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent)
+                val textView = view as TextView
+                textView.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                view.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.white))
+                return view
+            }
+        }
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        productSpinner.adapter = adapter
+
+        val productIndex = productList.indexOf(oldProduct)
+        productSpinner.setSelection(if (productIndex != -1) productIndex else 0)
+        qtyET.setText(oldQuantity)
+        expiryDateET.setText(oldExpiryDate)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        dialogView.findViewById<Button>(R.id.btnCancel).setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<Button>(R.id.btnSubmit).setOnClickListener {
+            binding.progressbar.visibility = View.VISIBLE
+            val selectedProduct = productSpinner.selectedItem?.toString() ?: "Select a product"
+            val qty = qtyET.text?.toString() ?: ""
+            val expiryDate = expiryDateET.text?.toString() ?: ""
+
+            if (selectedProduct == "Select a product" || selectedProduct.isEmpty()) {
+                Toast.makeText(requireContext(), "Please select a product", Toast.LENGTH_SHORT).show()
+                binding.progressbar.visibility = View.GONE
+                return@setOnClickListener
+            }
+
+            if (qty.isEmpty() || qty.toIntOrNull() == null) {
+                Toast.makeText(requireContext(), "Please enter a valid quantity", Toast.LENGTH_SHORT).show()
+                binding.progressbar.visibility = View.GONE
+                return@setOnClickListener
+            }
+
+            updateData(id, selectedProduct, qty, expiryDate)
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun updateData(id: String, product: String, quantity: String, expiryDate: String) {
+        val currentDate = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault()).format(Date())
+
+        if (expiryDate.isEmpty()) {
+            Toast.makeText(requireContext(), "Please enter an expiry date", Toast.LENGTH_SHORT).show()
+            binding.progressbar.visibility = View.GONE
+            return
+        }
+
+        val data: Map<String, Any> = hashMapOf(
+            "purchaseDate" to currentDate,
+            "product" to product,
+            "quantity" to quantity,
+            "expiryDate" to expiryDate
+        )
+
+        db.collection("storage").document(id)
+            .update(data)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Product updated successfully!", Toast.LENGTH_SHORT).show()
+                binding.progressbar.visibility = View.GONE
+                fetchData()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Unexpected error: ${e.message}", Toast.LENGTH_SHORT).show()
+                binding.progressbar.visibility = View.GONE
+            }
+    }
+
     private fun addHeaderRow() {
         val headerRow = TableRow(requireContext())
-        val headers = listOf("Purchase Date", "Product", "Quantity", "Expiry Date", "Action")
+        val headers = listOf("Purchase Date", "Product", "Quantity", "Expiry Date", "", "")
 
         headers.forEach { header ->
             val headerCell = TextView(requireContext())
