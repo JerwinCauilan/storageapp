@@ -210,13 +210,13 @@ class StorageFragment : Fragment() {
 
     private fun isExpiringTomorrow(expiryDate: String): Boolean {
         val dateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.getDefault())
-        val expiry = dateFormat.parse(expiryDate)
+        val expiry = dateFormat.parse(expiryDate) ?: return false
 
         val calendar = Calendar.getInstance()
         calendar.add(Calendar.DAY_OF_YEAR, 1)
-        val tomorrow = calendar.time
+        val tomorrow = dateFormat.format(calendar.time)
 
-        return expiry == tomorrow
+        return dateFormat.format(expiry) == tomorrow
     }
 
     private fun handleDelete(id: String) {
